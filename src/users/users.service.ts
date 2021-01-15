@@ -30,19 +30,16 @@ export class UsersService {
       await this.users.save(newUser);
       return { ok: true };
     } catch (error) {
-      return { ok: false, error };
+      return { ok: false, error: "Couldn't create a user" };
     }
   }
 
   async seeProfile(userId: number): Promise<SeeProfileOutput> {
     try {
-      const user = await this.users.findOne(userId);
-      if (!user) {
-        return { ok: false, error: "User doesn't exist!" };
-      }
+      const user = await this.users.findOneOrFail(userId);
       return { ok: true, user };
     } catch (error) {
-      return { ok: false, error };
+      return { ok: false, error: "Couldn't see user's profile" };
     }
   }
 
@@ -64,7 +61,7 @@ export class UsersService {
       const token = this.jwtService.sign(user.id);
       return { ok: true, token };
     } catch (error) {
-      return { ok: false, error };
+      return { ok: false, error: "Couldn't login" };
     }
   }
 
@@ -86,7 +83,7 @@ export class UsersService {
       await this.users.save(user);
       return { ok: true };
     } catch (error) {
-      return { ok: false, error };
+      return { ok: false, error: "Couldn't edit the profile" };
     }
   }
 }
