@@ -26,7 +26,6 @@ export class UsersResolver {
     return this.usersService.createUser(createUserInput);
   }
 
-  @UseGuards(AuthGuard)
   @Query(returns => SeeProfileOutput)
   seeProfile(
     @Args() seeProfileInput: SeeProfileInput,

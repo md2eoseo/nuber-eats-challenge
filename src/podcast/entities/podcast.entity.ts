@@ -8,7 +8,7 @@ import { CoreEntity } from '../../common/entity/core.entity';
 @InputType({ isAbstract: true })
 @ObjectType()
 export class Podcast extends CoreEntity {
-  @Column()
+  @Column({ unique: true })
   @Field(type => String)
   @IsString()
   title: string;

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UseGuards } from '@nestjs/common';
 import {
   CreateEpisodeInput,
   CreateEpisodeOutput,
@@ -21,6 +21,7 @@ import {
 } from './dtos/podcast.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Injectable()
 export class PodcastsService {
@@ -48,6 +49,7 @@ export class PodcastsService {
     }
   }
 
+  @UseGuards(AuthGuard)
   async createPodcast({
     title,
     category,
