@@ -20,6 +20,7 @@ import {
   CreateEpisodeOutput,
 } from './dtos/create-episode.dto';
 import { UpdateEpisodeInput } from './dtos/update-episode.dto';
+import { Role } from 'src/auth/role.decorator';
 
 @Resolver(of => Podcast)
 export class PodcastsResolver {
@@ -31,6 +32,7 @@ export class PodcastsResolver {
   }
 
   @Mutation(returns => CreatePodcastOutput)
+  @Role(['Host'])
   createPodcast(
     @Args('input') createPodcastInput: CreatePodcastInput,
   ): Promise<CreatePodcastOutput> {
@@ -45,6 +47,7 @@ export class PodcastsResolver {
   }
 
   @Mutation(returns => CoreOutput)
+  @Role(['Host'])
   deletePodcast(
     @Args('input') podcastSearchInput: PodcastSearchInput,
   ): Promise<CoreOutput> {
@@ -52,6 +55,7 @@ export class PodcastsResolver {
   }
 
   @Mutation(returns => CoreOutput)
+  @Role(['Host'])
   updatePodcast(
     @Args('input') updatePodcastInput: UpdatePodcastInput,
   ): Promise<CoreOutput> {
@@ -71,6 +75,7 @@ export class EpisodeResolver {
   }
 
   @Mutation(returns => CreateEpisodeOutput)
+  @Role(['Host'])
   createEpisode(
     @Args('input') createEpisodeInput: CreateEpisodeInput,
   ): Promise<CreateEpisodeOutput> {
@@ -78,6 +83,7 @@ export class EpisodeResolver {
   }
 
   @Mutation(returns => CoreOutput)
+  @Role(['Host'])
   updateEpisode(
     @Args('input') updateEpisodeInput: UpdateEpisodeInput,
   ): Promise<CoreOutput> {
@@ -85,6 +91,7 @@ export class EpisodeResolver {
   }
 
   @Mutation(returns => CoreOutput)
+  @Role(['Host'])
   deleteEpisode(
     @Args('input') episodesSearchInput: EpisodesSearchInput,
   ): Promise<CoreOutput> {

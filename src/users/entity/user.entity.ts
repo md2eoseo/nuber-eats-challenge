@@ -11,8 +11,8 @@ import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
 export enum UserRole {
-  Listener,
-  Host,
+  Listener = 'Listener',
+  Host = 'Host',
 }
 
 registerEnumType(UserRole, { name: 'UserRole' });

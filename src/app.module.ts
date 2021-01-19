@@ -15,6 +15,7 @@ import { UsersModule } from './users/users.module';
 import { User } from './users/entity/user.entity';
 import { JwtModule } from './jwt/jwt.module';
 import { JwtMiddleware } from './jwt/jwt.middleware';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
     JwtModule.forRoot({ privateKey: 'l6t1eHtKoJpNmprQYKBRj1nedutttP9W' }),
     PodcastsModule,
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
