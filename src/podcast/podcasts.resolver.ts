@@ -21,6 +21,21 @@ import {
 } from './dtos/create-episode.dto';
 import { UpdateEpisodeInput } from './dtos/update-episode.dto';
 import { Role } from 'src/auth/role.decorator';
+import {
+  ReviewPodcastInput,
+  ReviewPodcastOutput,
+} from './dtos/review-podcast.dto';
+import { AuthUser } from 'src/auth/auth-user.decorator';
+import { User } from 'src/users/entity/user.entity';
+import {
+  SubscribePodcastInput,
+  SubscribePodcastOutput,
+} from './dtos/subscribe-podcast.dto';
+import { GetSubscriptionsOutput } from './dtos/get-subscriptions.dto';
+import {
+  SearchPodcastsInput,
+  SearchPodcastsOutput,
+} from './dtos/search-podcasts.dto';
 
 @Resolver(of => Podcast)
 export class PodcastsResolver {
@@ -96,5 +111,42 @@ export class EpisodeResolver {
     @Args('input') episodesSearchInput: EpisodesSearchInput,
   ): Promise<CoreOutput> {
     return this.podcastService.deleteEpisode(episodesSearchInput);
+  }
+
+  @Mutation(returns => ReviewPodcastOutput)
+  @Role(['Listener'])
+  reviewPodcast(
+    @AuthUser() listener: User,
+    @Args('input') reviewPodcastInput: ReviewPodcastInput,
+  ): Promise<ReviewPodcastOutput> {
+    return this.podcastService.reviewPodcast(listener.id, reviewPodcastInput);
+  }
+
+  @Mutation(returns => SubscribePodcastOutput)
+  @Role(['Listener'])
+  subscribePodcast(
+    @AuthUser() listener: User,
+    @Args('input') subscribePodcastInput: SubscribePodcastInput,
+  ): Promise<SubscribePodcastOutput> {
+    return this.podcastService.subscribePodcast(
+      listener.id,
+      subscribePodcastInput,
+    );
+  }
+
+  @Query(returns => GetSubscriptionsOutput)
+  @Role(['Listener'])
+  getSubscriptions(
+    @AuthUser() listener: User,
+  ): Promise<GetSubscriptionsOutput> {
+    return this.podcastService.getSubscriptions(listener.id);
+  }
+
+  @Query(returns => SearchPodcastsOutput)
+  @Role(['Listener'])
+  searchPodcasts(
+    @Args('input') searchPodcastsInput: SearchPodcastsInput,
+  ): Promise<SearchPodcastsOutput> {
+    return this.podcastService.searchPodcasts(searchPodcastsInput);
   }
 }

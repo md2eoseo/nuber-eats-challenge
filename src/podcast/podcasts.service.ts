@@ -20,16 +20,38 @@ import {
   GetEpisodeOutput,
 } from './dtos/podcast.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Raw, Repository } from 'typeorm';
 import { AuthGuard } from 'src/auth/auth.guard';
+import {
+  ReviewPodcastInput,
+  ReviewPodcastOutput,
+} from './dtos/review-podcast.dto';
+import { Review } from './entities/review.entity';
+import { User } from 'src/users/entity/user.entity';
+import { Subscription } from './entities/subscription.entity';
+import {
+  SubscribePodcastInput,
+  SubscribePodcastOutput,
+} from './dtos/subscribe-podcast.dto';
+import { GetSubscriptionsOutput } from './dtos/get-subscriptions.dto';
+import {
+  SearchPodcastsInput,
+  SearchPodcastsOutput,
+} from './dtos/search-podcasts.dto';
 
 @Injectable()
 export class PodcastsService {
   constructor(
+    @InjectRepository(User)
+    private readonly users: Repository<User>,
     @InjectRepository(Podcast)
-    private readonly podcastRepository: Repository<Podcast>,
+    private readonly podcasts: Repository<Podcast>,
     @InjectRepository(Episode)
-    private readonly episodeRepository: Repository<Episode>,
+    private readonly episodes: Repository<Episode>,
+    @InjectRepository(Review)
+    private readonly reviews: Repository<Review>,
+    @InjectRepository(Subscription)
+    private readonly subscriptions: Repository<Subscription>,
   ) {}
 
   private readonly InternalServerErrorOutput = {
@@ -39,7 +61,7 @@ export class PodcastsService {
 
   async getAllPodcasts(): Promise<GetAllPodcastsOutput> {
     try {
-      const podcasts = await this.podcastRepository.find();
+      const podcasts = await this.podcasts.find();
       return {
         ok: true,
         podcasts,
@@ -55,8 +77,8 @@ export class PodcastsService {
     category,
   }: CreatePodcastInput): Promise<CreatePodcastOutput> {
     try {
-      const newPodcast = this.podcastRepository.create({ title, category });
-      const { id } = await this.podcastRepository.save(newPodcast);
+      const newPodcast = this.podcasts.create({ title, category });
+      const { id } = await this.podcasts.save(newPodcast);
       return {
         ok: true,
         id,
@@ -68,7 +90,7 @@ export class PodcastsService {
 
   async getPodcast(id: number): Promise<PodcastOutput> {
     try {
-      const podcast = await this.podcastRepository.findOne(
+      const podcast = await this.podcasts.findOne(
         { id },
         { relations: ['episodes'] },
       );
@@ -93,7 +115,7 @@ export class PodcastsService {
       if (!ok) {
         return { ok, error };
       }
-      await this.podcastRepository.delete({ id });
+      await this.podcasts.delete({ id });
       return { ok };
     } catch (e) {
       return this.InternalServerErrorOutput;
@@ -118,7 +140,7 @@ export class PodcastsService {
         }
       }
       const updatedPodcast: Podcast = { ...podcast, ...payload };
-      await this.podcastRepository.save(updatedPodcast);
+      await this.podcasts.save(updatedPodcast);
       return { ok };
     } catch (e) {
       return this.InternalServerErrorOutput;
@@ -175,9 +197,9 @@ export class PodcastsService {
       if (!ok) {
         return { ok, error };
       }
-      const newEpisode = this.episodeRepository.create({ title, category });
+      const newEpisode = this.episodes.create({ title, category });
       newEpisode.podcast = podcast;
-      const { id } = await this.episodeRepository.save(newEpisode);
+      const { id } = await this.episodes.save(newEpisode);
       return {
         ok: true,
         id,
@@ -199,7 +221,7 @@ export class PodcastsService {
       if (!ok) {
         return { ok, error };
       }
-      await this.episodeRepository.delete({ id: episode.id });
+      await this.episodes.delete({ id: episode.id });
       return { ok: true };
     } catch (e) {
       return this.InternalServerErrorOutput;
@@ -220,10 +242,72 @@ export class PodcastsService {
         return { ok, error };
       }
       const updatedEpisode = { ...episode, ...rest };
-      await this.episodeRepository.save(updatedEpisode);
+      await this.episodes.save(updatedEpisode);
       return { ok: true };
     } catch (e) {
       return this.InternalServerErrorOutput;
+    }
+  }
+
+  async reviewPodcast(
+    userId: number,
+    { podcastId, content }: ReviewPodcastInput,
+  ): Promise<ReviewPodcastOutput> {
+    try {
+      const listener = await this.users.findOne(userId);
+      const podcast = await this.podcasts.findOne(podcastId);
+      const newReview = this.reviews.create({ listener, podcast, content });
+      await this.reviews.save(newReview);
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, error: "Couldn't review podcast" };
+    }
+  }
+
+  async subscribePodcast(
+    userId: number,
+    { podcastId }: SubscribePodcastInput,
+  ): Promise<SubscribePodcastOutput> {
+    try {
+      const listener = await this.users.findOne(userId);
+      const podcast = await this.podcasts.findOne(podcastId);
+      const newSubscription = this.subscriptions.create({ listener, podcast });
+      await this.subscriptions.save(newSubscription);
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, error: "Couldn't subscribe podcast" };
+    }
+  }
+
+  async getSubscriptions(userId: number): Promise<GetSubscriptionsOutput> {
+    try {
+      const listener = await this.users.findOne(userId);
+      const subscriptions = await this.subscriptions.find({
+        where: { listener },
+        relations: ['podcast'],
+      });
+      return { ok: true, subscriptions };
+    } catch (error) {
+      return { ok: false, error: "Couldn't get subscriptions" };
+    }
+  }
+
+  async searchPodcasts({
+    query,
+  }: SearchPodcastsInput): Promise<SearchPodcastsOutput> {
+    try {
+      const [podcasts, podcastsNum] = await this.podcasts.findAndCount({
+        where: { title: Raw(title => `${title} LIKE '%${query}%'`) },
+      });
+      if (!podcasts.length) {
+        return { ok: false, error: 'Podcasts not found' };
+      }
+      return {
+        ok: true,
+        podcasts,
+      };
+    } catch (error) {
+      return { ok: false, error: "Couldn't search podcasts" };
     }
   }
 }

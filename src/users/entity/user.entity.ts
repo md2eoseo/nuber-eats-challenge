@@ -7,8 +7,10 @@ import {
 } from '@nestjs/graphql';
 import { IsString } from 'class-validator';
 import { CoreEntity } from 'src/common/entity/core.entity';
-import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { Review } from 'src/podcast/entities/review.entity';
+import { Subscription } from 'src/podcast/entities/subscription.entity';
 
 export enum UserRole {
   Listener = 'Listener',
@@ -34,6 +36,14 @@ export class User extends CoreEntity {
   @Column({ type: 'simple-enum', enum: UserRole })
   @Field(type => UserRole)
   role: UserRole;
+
+  @OneToMany(() => Review, review => review.podcast)
+  @Field(type => [Review])
+  reviews: Review[];
+
+  @OneToMany(() => Subscription, subscription => subscription.podcast)
+  @Field(type => [Subscription])
+  subscriptions: Subscription[];
 
   @BeforeInsert()
   @BeforeUpdate()
