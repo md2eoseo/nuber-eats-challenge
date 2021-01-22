@@ -32,6 +32,7 @@ import { Subscription } from './podcast/entities/subscription.entity';
       // playground: process.env.NODE_ENV !== 'production',
       playground: true,
       autoSchemaFile: true,
+      introspection: true,
       context: ({ req }) => ({ user: req['user'] }),
     }),
     JwtModule.forRoot({ privateKey: 'l6t1eHtKoJpNmprQYKBRj1nedutttP9W' }),
