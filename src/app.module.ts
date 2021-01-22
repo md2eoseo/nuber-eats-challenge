@@ -29,6 +29,8 @@ import { Subscription } from './podcast/entities/subscription.entity';
       entities: [Podcast, Episode, User, Review, Subscription],
     }),
     GraphQLModule.forRoot({
+      // playground: process.env.NODE_ENV !== 'production',
+      playground: true,
       autoSchemaFile: true,
       context: ({ req }) => ({ user: req['user'] }),
     }),
